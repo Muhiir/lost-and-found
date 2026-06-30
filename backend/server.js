@@ -278,8 +278,6 @@ app.get('/messages', isAuthenticated, async (req, res) => {
   }
 });
 
-const isProduction = process.env.NODE_ENV === 'production';
-
 if (isProduction) {
   app.use(express.static(path.join(__dirname, '../my-school-react-app/build')));
 
