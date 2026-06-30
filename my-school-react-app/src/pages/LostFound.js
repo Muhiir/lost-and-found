@@ -11,7 +11,6 @@ function LostFound() {
     type: 'lost', title: '', description: '', location: '', category: 'Other', image: ''
   });
 
-  const API_URL = 'http://localhost:4000';
 
   // Fetch items from backend
   useEffect(() => {
