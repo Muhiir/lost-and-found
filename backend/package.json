@@ -12,8 +12,7 @@
     "dev": "nodemon server.js",
     "seed": "node seed.js",
     "build": "npm run build",
-    "postinstall": "npm install --prefix ../my-school-react-app",
-    "heroku-postbuild": "npm install --prefix ../my-school-react-app && npm run build --prefix ../my-school-react-app"
+    "postinstall": "npm install"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

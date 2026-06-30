@@ -1,9 +1,0 @@
-{
-  "name": "school-app-fullstack",
-  "private": true,
-  "scripts": {
-    "install": "npm install --prefix backend && npm install --prefix my-school-react-app",
-    "build": "npm run build --prefix my-school-react-app",
-    "start": "npm run start --prefix backend"
-  }
-}
