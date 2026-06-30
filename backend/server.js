@@ -26,15 +26,24 @@ const allowedOrigins = [
   'https://lost-and-found-kappa-ochre.vercel.app'
 ];
 
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('CORS policy violation'));
+  },
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
 if (isProduction) {
   app.set('trust proxy', 1);
 }
 
 // Basic middleware first
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -43,13 +52,15 @@ app.use(session({
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  proxy: isProduction,
   store: MongoStore.create({
     mongoUrl: DB_URL
   }),
   cookie: {
     maxAge: 1000 * 60 * 60 * 24,
     sameSite: isProduction ? 'none' : 'lax',
-    secure: isProduction
+    secure: isProduction,
+    httpOnly: true
   }
 }));
 
@@ -98,7 +109,12 @@ app.post('/register', async (req, res) => {
     req.session.userId = user._id;
     req.session.user = { id: user._id, fullName: user.fullName, email: user.email };
 
-    res.status(201).json({ message: 'Registered successfully', user: req.session.user });
+    req.session.save((err) => {
+      if (err) {
+        return res.status(500).json({ message: 'Session save failed', error: err.message });
+      }
+      res.status(201).json({ message: 'Registered successfully', user: req.session.user });
+    });
   } catch (err) {
     res.status(500).json({ message: 'Registration failed', error: err.message });
   }
@@ -126,7 +142,12 @@ app.post('/login', async (req, res) => {
     req.session.userId = user._id;
     req.session.user = { id: user._id, fullName: user.fullName, email: user.email };
 
-    res.json({ message: 'Logged in successfully', user: req.session.user });
+    req.session.save((err) => {
+      if (err) {
+        return res.status(500).json({ message: 'Session save failed', error: err.message });
+      }
+      res.json({ message: 'Logged in successfully', user: req.session.user });
+    });
   } catch (err) {
     res.status(500).json({ message: 'Login failed', error: err.message });
   }
@@ -137,7 +158,11 @@ app.post('/logout', (req, res) => {
     if (err) {
       return res.status(500).json({ message: 'Logout failed' });
     }
-    res.clearCookie('connect.sid');
+    res.clearCookie('connect.sid', {
+      httpOnly: true,
+      sameSite: isProduction ? 'none' : 'lax',
+      secure: isProduction
+    });
     res.json({ message: 'Logged out successfully' });
   });
 });
