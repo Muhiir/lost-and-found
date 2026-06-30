@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+
 function Profile({ user }) {
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -26,9 +28,9 @@ function Profile({ user }) {
       try {
         setIsLoadingProfile(true);
         const [profileRes, usersRes, messagesRes] = await Promise.all([
-          axios.get('http://localhost:4000/me/profile', { withCredentials: true }),
-          axios.get('http://localhost:4000/users', { withCredentials: true }),
-          axios.get('http://localhost:4000/messages', { withCredentials: true })
+          axios.get(`${API_URL}/me/profile`, { withCredentials: true }),
+          axios.get(`${API_URL}/users`, { withCredentials: true }),
+          axios.get(`${API_URL}/messages`, { withCredentials: true })
         ]);
         const nextProfile = profileRes.data?.user || null;
         setProfile(nextProfile);
@@ -64,7 +66,7 @@ function Profile({ user }) {
       return alert("Please fill in all required fields!");
     }
     try {
-      const res = await axios.put('http://localhost:4000/me/profile', formData, { withCredentials: true });
+      const res = await axios.put(`${API_URL}/me/profile`, formData, { withCredentials: true });
       setProfile(res.data.user);
       setFormData({
         fullName: res.data.user.fullName || '',
@@ -89,7 +91,7 @@ function Profile({ user }) {
 
     try {
       setLoadingMessages(true);
-      const res = await axios.post('http://localhost:4000/messages', { recipient, content: messageText }, { withCredentials: true });
+      const res = await axios.post(`${API_URL}/messages`, { recipient, content: messageText }, { withCredentials: true });
       setMessages(prev => [res.data.message, ...prev]);
       setMessageText('');
       alert('✅ Message sent');

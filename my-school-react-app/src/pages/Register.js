@@ -21,8 +21,10 @@ function Register({ setUser }) {
       return alert("Please fill in all required fields!");
     }
 
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+
     try {
-      const res = await axios.post('http://localhost:4000/register', formData, { withCredentials: true });
+      const res = await axios.post(`${API_URL}/register`, formData, { withCredentials: true });
       setUser(res.data.user);
       navigate('/feed', { replace: true });
       alert("✅ Account created successfully! Welcome to Campus Connect 🎉");

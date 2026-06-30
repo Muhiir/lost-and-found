@@ -2,8 +2,11 @@ const mongoose = require('mongoose');
 const Item = require('./models/Item');
 const Post = require('./models/Post');
 
+require('dotenv').config();
+const DB_URL = process.env.DB_URL || 'mongodb://127.0.0.1:27017/campusconnect';
+
 // MongoDB Connection
-mongoose.connect('mongodb://127.0.0.1:27017/campusconnect')
+mongoose.connect(DB_URL)
   .then(() => console.log('✅ MongoDB Connected Successfully'))
   .catch((err) => console.log('❌ MongoDB Connection Error:', err));
 

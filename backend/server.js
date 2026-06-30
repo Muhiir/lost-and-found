@@ -4,7 +4,14 @@ const cors = require('cors');
 const session = require('express-session');
 const MongoStore = require('connect-mongo').default;
 const bcrypt = require('bcryptjs');
+const path = require('path');
 const { normalizeEmail, buildEmailQuery } = require('./utils/auth');
+
+require('dotenv').config();
+
+const DB_URL = process.env.DB_URL || 'mongodb://127.0.0.1:27017/campusconnect';
+const SESSION_SECRET = process.env.SESSION_SECRET || 'campusconnect-secret-2026';
+const PORT = process.env.PORT || 4000;
 
 const app = express();
 
@@ -18,17 +25,17 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Session setup second
 app.use(session({
-  secret: 'campusconnect-secret-2026',
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: 'mongodb://127.0.0.1:27017/campusconnect'
+    mongoUrl: DB_URL
   }),
   cookie: { maxAge: 1000 * 60 * 60 * 24, sameSite: 'lax' } // 1 day
 }));
 
 // MongoDB connection (can be early)
-mongoose.connect('mongodb://127.0.0.1:27017/campusconnect')
+mongoose.connect(DB_URL)
   .then(() => console.log('✅ MongoDB Connected Successfully'))
   .catch((err) => console.log('❌ MongoDB Connection Error:', err));
 
@@ -265,7 +272,15 @@ app.get('/messages', isAuthenticated, async (req, res) => {
   }
 });
 
-const PORT = 4000;
+const isProduction = process.env.NODE_ENV === 'production';
+
+if (isProduction) {
+  app.use(express.static(path.join(__dirname, '../my-school-react-app/build')));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../my-school-react-app/build', 'index.html'));
+  });
+}
 
 const startServer = () => {
   const server = app.listen(PORT, () => {

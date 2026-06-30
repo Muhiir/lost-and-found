@@ -8,6 +8,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+
 function Navbar({ user, logout }) {
   return (
     <nav style={{ background: 'linear-gradient(135deg, #1b5e20, #4caf50)', padding: '18px 0', color: 'white' }}>
@@ -50,14 +52,14 @@ function App() {
   const location = useLocation();
 
   useEffect(() => {
-    axios.get('http://localhost:4000/me', { withCredentials: true })
+    axios.get(`${API_URL}/me`, { withCredentials: true })
       .then(res => setUser(res.data.user))
       .catch(() => setUser(null));
   }, [location.pathname]);
 
   const logout = async () => {
     try {
-      await axios.post('http://localhost:4000/logout', {}, { withCredentials: true });
+      await axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
     } catch (err) {
       console.error(err);
     } finally {

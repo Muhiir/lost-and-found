@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+
 function Feed({ user }) {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState({ content: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const API_URL = 'http://localhost:4000';
 
   // Fetch posts from backend
   useEffect(() => {
@@ -32,7 +32,7 @@ function Feed({ user }) {
     e.preventDefault();
     if (!newPost.content.trim()) return;
 
-    axios.post('http://localhost:4000/posts', {
+    axios.post(`${API_URL}/posts`, {
       content: newPost.content,
       likes: 0
     }, { withCredentials: true })
