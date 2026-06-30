@@ -1,0 +1,211 @@
+.app-shell {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #2d2c7a, #4a3bbe, #7c4dff, #03a9f4);
+  background-size: 300% 300%;
+  animation: gradientWave 12s ease infinite;
+  color: white;
+}
+
+@keyframes gradientWave {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.app-content {
+  min-height: calc(100vh - 70px);
+  padding: 30px 20px 50px;
+}
+
+button,
+a.btn,
+a.button-link,
+input,
+select,
+textarea {
+  border: none;
+  outline: none;
+  font-family: inherit;
+}
+
+button,
+.a-button,
+.a-button-alt,
+.button-link {
+  cursor: pointer;
+  border-radius: 999px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+}
+
+button:hover,
+.a-button:hover,
+.button-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+}
+
+button:focus,
+.a-button:focus,
+.button-link:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 2px;
+}
+
+button,
+.a-button,
+.a-button-alt,
+.button-link {
+  padding: 14px 26px;
+  background: rgba(255, 255, 255, 0.16);
+  color: white;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button.primary,
+.a-button.primary,
+.button-link.primary {
+  background: linear-gradient(135deg, #5b65ff, #03a9f4);
+}
+
+button.secondary,
+.a-button.secondary,
+.button-link.secondary {
+  background: linear-gradient(135deg, #f50057, #ff8a65);
+}
+
+button.ghost,
+.a-button.ghost,
+.button-link.ghost {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+button.danger,
+.a-button.danger,
+.button-link.danger {
+  background: linear-gradient(135deg, #d32f2f, #f06292);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: transparent;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Lost & Found page styles and animations */
+.lostfound-page {
+  min-height: 100vh;
+  padding: 60px 20px;
+  background: url('/al-hikmah-logo.svg') no-repeat center 10%/160px, radial-gradient(circle at 10% 10%, rgba(20,40,20,0.06), transparent 6%), linear-gradient(180deg, #071017 0%, #071218 100%);
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  color: #e6f5ea;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.lf-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding: 30px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #0f3b1a 0%, #1b5e20 100%);
+  color: white;
+  animation: pulseGlow 6s ease-in-out infinite;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+@keyframes pulseGlow {
+  0% { box-shadow: 0 8px 30px rgba(27,94,32,0.12); transform: translateY(0); }
+  50% { box-shadow: 0 18px 60px rgba(27,94,32,0.22); transform: translateY(-3px); }
+  100% { box-shadow: 0 8px 30px rgba(27,94,32,0.12); transform: translateY(0); }
+}
+
+.lf-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  color: #e6f5ea;
+  margin-bottom: 40px;
+}
+
+.lf-form .lf-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.lf-control {
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.04);
+  color: inherit;
+}
+
+.lf-form input[type="file"] {
+  background: transparent;
+  color: inherit;
+}
+
+.lf-form textarea.lf-control { min-height: 100px; }
+
+.lf-button.primary {
+  width: 100%;
+  padding: 15px;
+  border-radius: 8px;
+  background: linear-gradient(135deg,#1b5e20,#4caf50);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.lf-button.primary:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,0.6); }
+
+.lf-subtitle { color: #aee1b9; }
+
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.lf-item {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  transform: translateY(0);
+  animation: floatUp 640ms ease both;
+}
+
+.lf-item img { width: 100%; height: 200px; object-fit: cover; display: block; }
+
+@keyframes floatUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.badge { padding: 5px 12px; border-radius: 20px; color: white; font-size: 14px; }
+
