@@ -9,9 +9,15 @@ const { normalizeEmail, buildEmailQuery } = require('./utils/auth');
 
 require('dotenv').config();
 
+const isProduction = process.env.NODE_ENV === 'production';
 const DB_URL = process.env.DB_URL || 'mongodb://127.0.0.1:27017/campusconnect';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'campusconnect-secret-2026';
 const PORT = process.env.PORT || 4000;
+
+if (isProduction && !process.env.DB_URL) {
+  console.error('❌ Missing DB_URL environment variable. Set DB_URL in Render environment settings.');
+  process.exit(1);
+}
 
 const app = express();
 
