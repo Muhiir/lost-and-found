@@ -4,7 +4,6 @@ const cors = require('cors');
 const session = require('express-session');
 const MongoStore = require('connect-mongo').default;
 const bcrypt = require('bcryptjs');
-const path = require('path');
 const { normalizeEmail, buildEmailQuery } = require('./utils/auth');
 
 require('dotenv').config();
@@ -278,13 +277,21 @@ app.get('/messages', isAuthenticated, async (req, res) => {
   }
 });
 
-if (isProduction) {
-  app.use(express.static(path.join(__dirname, '../my-school-react-app/build')));
-
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../my-school-react-app/build', 'index.html'));
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Campus Connect backend is running.',
+    status: 'ok',
+    api: [
+      '/register',
+      '/login',
+      '/logout',
+      '/me',
+      '/items',
+      '/posts',
+      '/messages'
+    ]
   });
-}
+});
 
 const startServer = () => {
   const server = app.listen(PORT, () => {
