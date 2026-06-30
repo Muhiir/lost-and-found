@@ -20,9 +20,19 @@ if (isProduction && !process.env.DB_URL) {
 
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'https://lost-and-found-kappa-ochre.vercel.app'
+];
+
+if (isProduction) {
+  app.set('trust proxy', 1);
+}
+
 // Basic middleware first
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: allowedOrigins,
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -36,7 +46,11 @@ app.use(session({
   store: MongoStore.create({
     mongoUrl: DB_URL
   }),
-  cookie: { maxAge: 1000 * 60 * 60 * 24, sameSite: 'lax' } // 1 day
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24,
+    sameSite: isProduction ? 'none' : 'lax',
+    secure: isProduction
+  }
 }));
 
 // MongoDB connection (can be early)
