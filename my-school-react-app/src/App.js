@@ -11,20 +11,21 @@ import Navbar from './components/Navbar';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
 axios.defaults.withCredentials = true;
+axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 function App() {
   const [user, setUser] = useState(null);
   const location = useLocation();
 
   useEffect(() => {
-    axios.get(`${API_URL}/me`)
+    axios.get(`${API_URL}/me`, { withCredentials: true })
       .then(res => setUser(res.data.user))
       .catch(() => setUser(null));
   }, [location.pathname]);
 
   const logout = async () => {
     try {
-      await axios.post(`${API_URL}/logout`, {});
+      await axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
     } catch (err) {
       console.error(err);
     } finally {
