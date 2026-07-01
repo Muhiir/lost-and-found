@@ -58,7 +58,8 @@ app.use(session({
     maxAge: 1000 * 60 * 60 * 24,
     sameSite: isProduction ? 'none' : 'lax',
     secure: isProduction,
-    httpOnly: true
+    httpOnly: true,
+    path: '/'
   }
 }));
 
@@ -427,6 +428,14 @@ app.get('/', (req, res) => {
   });
 });
 
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    console.error('❌ Invalid JSON payload received:', err.message);
+    return res.status(400).json({ message: 'Invalid JSON payload' });
+  }
+  next(err);
+});
+
 const startServer = () => {
   const server = app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
@@ -441,6 +450,12 @@ const startServer = () => {
       process.exit(1);
     }
   });
+
+  return server;
 };
 
-startServer();
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = { app, startServer };
