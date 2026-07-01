@@ -112,8 +112,8 @@ code {
 .lostfound-page {
   min-height: 100vh;
   padding: 60px 20px;
-  background: url('/al-hikmah-logo.svg') no-repeat center 10%/160px, radial-gradient(circle at 10% 10%, rgba(20,40,20,0.06), transparent 6%), linear-gradient(180deg, #071017 0%, #071218 100%);
-  background-repeat: no-repeat, no-repeat, no-repeat;
+  background: radial-gradient(circle at 10% 10%, rgba(20,40,20,0.06), transparent 6%), linear-gradient(180deg, #071017 0%, #071218 100%);
+  background-repeat: no-repeat, no-repeat;
   color: #e6f5ea;
 }
 
@@ -208,4 +208,190 @@ code {
 }
 
 .badge { padding: 5px 12px; border-radius: 20px; color: white; font-size: 14px; }
+
+* { box-sizing: border-box; }
+html, body, #root { width: 100%; overflow-x: hidden; }
+body { padding: 0; }
+
+.app-nav__inner,
+.page-container,
+.page-shell {
+  width: 100%;
+}
+
+.app-nav__inner {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.app-nav__brand {
+  flex: 0 0 auto;
+}
+
+.app-nav__links,
+.app-nav__actions {
+  flex-wrap: wrap;
+}
+
+.page-shell {
+  padding: 40px 20px;
+  min-height: 100vh;
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-card,
+.page-header {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.page-card {
+  padding: 32px;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 40px;
+  background: linear-gradient(135deg, #1b5e20, #4caf50);
+  color: white;
+  padding: 40px 20px;
+  border-radius: 20px;
+}
+
+.page-form input,
+.page-form textarea,
+.page-form select,
+.auth-card input,
+.auth-card textarea,
+.auth-card select,
+.profile-card input,
+.profile-card textarea,
+.profile-card select,
+.lf-card input,
+.lf-card textarea,
+.lf-card select {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+.home-shell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.home-link {
+  min-width: 0;
+  text-align: center;
+}
+
+.feed-post,
+.profile-card,
+.lf-card,
+.auth-card {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+  .page-shell {
+    padding: 30px 16px;
+  }
+
+  .page-card,
+  .page-header {
+    padding: 24px;
+  }
+
+  .app-nav__inner {
+    justify-content: center;
+  }
+
+  .app-nav__links,
+  .app-nav__actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-nav__inner {
+    padding: 0 12px;
+  }
+
+  .app-nav__brand {
+    font-size: 1.1rem;
+  }
+
+  .app-nav__links a,
+  .app-nav__actions a,
+  .app-nav__actions button {
+    padding: 8px 12px;
+    font-size: 0.95rem;
+  }
+
+  .page-shell {
+    padding: 20px 12px;
+  }
+
+  .page-card,
+  .page-header {
+    padding: 20px 16px;
+  }
+
+  .page-header h1 {
+    font-size: 2rem;
+  }
+
+  .page-header p {
+    font-size: 1rem;
+  }
+
+  .home-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lf-form-grid,
+  .lf-items-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .auth-card,
+  .profile-card {
+    padding: 20px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-nav__inner {
+    align-items: flex-start;
+  }
+
+  .app-nav__actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .page-shell {
+    padding: 16px 10px;
+  }
+
+  .page-card,
+  .page-header {
+    padding: 16px 12px;
+    border-radius: 16px;
+  }
+}
 

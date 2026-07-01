@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 function Navbar({ user, logout }) {
   return (
-    <nav style={{
+    <nav className="app-nav" style={{
       background: 'linear-gradient(135deg, #1b5e20, #4caf50)',
       padding: '18px 0',
       color: 'white',
@@ -11,7 +11,7 @@ function Navbar({ user, logout }) {
       top: 0,
       zIndex: 1000
     }}>
-      <div style={{
+      <div className="app-nav__inner" style={{
         maxWidth: '1200px',
         margin: '0 auto',
         display: 'flex',
@@ -21,6 +21,7 @@ function Navbar({ user, logout }) {
       }}>
         {/* Logo */}
         <Link 
+          className="app-nav__brand"
           to="/" 
           style={{ 
             color: 'white', 
@@ -36,7 +37,7 @@ function Navbar({ user, logout }) {
         </Link>
 
         {/* Navigation Links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="app-nav__links" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Link 
             to="/" 
             style={{ 
@@ -105,7 +106,7 @@ function Navbar({ user, logout }) {
 
           {/* Auth Section */}
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="app-nav__actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontWeight: '500' }}>Hi, {user.name}</span>
               <button 
                 onClick={logout}
@@ -126,7 +127,7 @@ function Navbar({ user, logout }) {
               </button>
             </div>
           ) : (
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div className="app-nav__actions" style={{ display: 'flex', gap: '10px' }}>
               <Link 
                 to="/login" 
                 style={{

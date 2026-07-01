@@ -34,14 +34,14 @@ function Register({ setUser }) {
   };
 
   return (
-    <div style={{
+    <div className="page-shell" style={{
       padding: '40px 20px',
       background: 'linear-gradient(135deg, #ffffff 0%, #e8f5e9 100%)',
       minHeight: '100vh'
     }}>
-      <div style={{ maxWidth: '450px', margin: '0 auto' }}>
+      <div className="page-container" style={{ maxWidth: '450px', margin: '0 auto' }}>
         {/* Header */}
-        <div style={{
+        <div className="page-header" style={{
           textAlign: 'center',
           marginBottom: '40px',
           background: 'linear-gradient(135deg, #1b5e20, #4caf50)',
@@ -56,7 +56,7 @@ function Register({ setUser }) {
         </div>
 
         {/* Register Form */}
-        <div style={{
+        <div className="page-card auth-card" style={{
           background: 'white',
           padding: '40px',
           borderRadius: '20px',

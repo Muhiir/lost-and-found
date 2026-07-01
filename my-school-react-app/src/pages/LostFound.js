@@ -53,14 +53,14 @@ function LostFound() {
   };
 
   return (
-    <div style={{
+    <div className="page-shell" style={{
       padding: '40px 20px',
       background: 'linear-gradient(135deg, #ffffff 0%, #e8f5e9 100%)',
       minHeight: '100vh'
     }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <div className="page-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header with animation */}
-        <div style={{
+        <div className="page-header" style={{
           textAlign: 'center',
           marginBottom: '40px',
           background: 'linear-gradient(135deg, #1b5e20, #4caf50)',
@@ -76,7 +76,7 @@ function LostFound() {
         </div>
 
         {/* Post Form */}
-        <div style={{
+        <div className="page-card auth-card" style={{
           background: 'white',
           padding: '35px',
           borderRadius: '20px',
@@ -90,7 +90,7 @@ function LostFound() {
           <h3 style={{ color: '#1b5e20', marginBottom: '25px' }}>📝 Post a New Item</h3>
           
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div className="lf-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
               <select name="type" value={formData.type} onChange={handleChange} style={{ padding: '14px', borderRadius: '10px', border: '1px solid #ddd' }}>
                 <option value="lost">Lost Item</option>
                 <option value="found">Found Item</option>
@@ -144,7 +144,7 @@ function LostFound() {
           {loading ? 'Loading items...' : `Recent Items (${items.length})`}
         </h3>
         {error && <div style={{ padding: '15px', background: '#ffcdd2', color: '#c62828', borderRadius: '10px', marginBottom: '20px' }}>⚠️ {error}</div>}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '25px' }}>
+        <div className="lf-items-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '25px' }}>
           {items.length === 0 ? (
             <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#666' }}>No items yet. Be the first to post!</p>
           ) : (
