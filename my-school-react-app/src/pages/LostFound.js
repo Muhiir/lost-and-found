@@ -7,6 +7,9 @@ function LostFound() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [messageDraft, setMessageDraft] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
   const [formData, setFormData] = useState({
     type: 'lost', title: '', description: '', location: '', category: 'Other', image: ''
   });
@@ -39,7 +42,7 @@ function LostFound() {
     
     try {
       setLoading(true);
-      const response = await axios.post(`${API_URL}/items`, formData);
+      const response = await axios.post(`${API_URL}/items`, formData, { withCredentials: true });
       setItems([response.data, ...items]);
       setFormData({ type: 'lost', title: '', description: '', location: '', category: 'Other', image: '' });
       alert("✅ Item posted successfully!");
@@ -49,6 +52,35 @@ function LostFound() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOpenMessage = (item) => {
+    setSelectedItem(item);
+    setMessageDraft(`Hi! I saw your post about "${item.title}" and wanted to ask about it.`);
+  };
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!selectedItem || !messageDraft.trim()) return;
+
+    try {
+      setSendingMessage(true);
+      const recipient = selectedItem.postedByEmail || selectedItem.postedBy || selectedItem.postedByName;
+      const res = await axios.post(`${API_URL}/messages`, {
+        recipient,
+        content: messageDraft.trim()
+      }, { withCredentials: true });
+
+      if (res.status === 201) {
+        alert('✅ Message sent to the item owner');
+        setSelectedItem(null);
+        setMessageDraft('');
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Could not send message');
+    } finally {
+      setSendingMessage(false);
     }
   };
 
@@ -159,6 +191,7 @@ function LostFound() {
                   transition: 'all 0.4s ease',
                   cursor: 'pointer'
                 }}
+                onClick={() => handleOpenMessage(item)}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-12px)';
                   e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.15)';
@@ -192,12 +225,59 @@ function LostFound() {
                   <h4 style={{ margin: '15px 0 10px 0' }}>{item.title}</h4>
                   <p style={{ color: '#444', lineHeight: '1.5' }}>{item.description}</p>
                   <small style={{ color: '#666' }}>📍 {item.location || 'Not specified'} • {item.date}</small>
+                  <div style={{ marginTop: '14px' }}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenMessage(item);
+                      }}
+                      style={{
+                        background: '#1b5e20',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '999px',
+                        padding: '8px 14px',
+                        cursor: 'pointer',
+                        fontWeight: '600'
+                      }}
+                    >
+                      💬 Message owner
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
           )}
         </div>
       </div>
+
+      {selectedItem && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 1000 }}>
+          <div style={{ background: 'white', width: '100%', maxWidth: '480px', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h3 style={{ margin: 0, color: '#1b5e20' }}>Message owner</h3>
+              <button type="button" onClick={() => setSelectedItem(null)} style={{ border: 'none', background: 'transparent', fontSize: '20px', cursor: 'pointer' }}>×</button>
+            </div>
+            <p style={{ margin: '0 0 12px 0', color: '#555' }}>Send a quick message about “{selectedItem.title}”.</p>
+            <form onSubmit={handleSendMessage}>
+              <textarea
+                value={messageDraft}
+                onChange={(e) => setMessageDraft(e.target.value)}
+                rows={5}
+                placeholder="Write your message..."
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd', resize: 'vertical' }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px' }}>
+                <button type="button" onClick={() => setSelectedItem(null)} style={{ padding: '10px 14px', borderRadius: '10px', border: '1px solid #ddd', background: 'white', cursor: 'pointer' }}>Cancel</button>
+                <button type="submit" disabled={sendingMessage} style={{ padding: '10px 14px', borderRadius: '10px', border: 'none', background: '#1b5e20', color: 'white', cursor: sendingMessage ? 'not-allowed' : 'pointer' }}>
+                  {sendingMessage ? 'Sending...' : 'Send message'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Keyframes */}
       <style>{`

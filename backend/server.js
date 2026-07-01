@@ -334,7 +334,12 @@ app.get('/items', async (req, res) => {
 
 app.post('/items', async (req, res) => {
   try {
-    const newItem = new Item(req.body);
+    const newItem = new Item({
+      ...req.body,
+      postedBy: req.body.postedBy || req.session?.userId || null,
+      postedByEmail: req.body.postedByEmail || req.session?.user?.email || null,
+      postedByName: req.body.postedByName || req.session?.user?.fullName || null,
+    });
     await newItem.save();
     res.json(newItem);
   } catch (err) {

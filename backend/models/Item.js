@@ -7,6 +7,9 @@ const itemSchema = new mongoose.Schema({
   location: String,
   category: String,
   image: String,
+  postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  postedByEmail: String,
+  postedByName: String,
   date: { type: String, default: () => new Date().toLocaleString() }
 });
 
