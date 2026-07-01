@@ -14,7 +14,7 @@ function Login({ setUser }) {
     if (!email || !password) return alert("Please fill in all fields!");
 
     try {
-      const res = await axios.post(`${API_URL}/login`, { email, password }, { withCredentials: true });
+      const res = await axios.post(`${API_URL}/login`, { email, password });
       setUser(res.data.user);
       navigate('/feed', { replace: true });
       alert("✅ Login successful! Welcome back 🎉");

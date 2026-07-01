@@ -10,20 +10,21 @@ import Profile from './pages/Profile';
 import Navbar from './components/Navbar';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+axios.defaults.withCredentials = true;
 
 function App() {
   const [user, setUser] = useState(null);
   const location = useLocation();
 
   useEffect(() => {
-    axios.get(`${API_URL}/me`, { withCredentials: true })
+    axios.get(`${API_URL}/me`)
       .then(res => setUser(res.data.user))
       .catch(() => setUser(null));
   }, [location.pathname]);
 
   const logout = async () => {
     try {
-      await axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
+      await axios.post(`${API_URL}/logout`, {});
     } catch (err) {
       console.error(err);
     } finally {

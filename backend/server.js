@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const session = require('express-session');
-const MongoStore = require('connect-mongo').default;
+const { MemoryStore } = require('express-session');
 const bcrypt = require('bcryptjs');
 const { normalizeEmail, buildEmailQuery } = require('./utils/auth');
 
@@ -53,9 +53,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   proxy: isProduction,
-  store: MongoStore.create({
-    mongoUrl: DB_URL
-  }),
+  store: new MemoryStore(),
   cookie: {
     maxAge: 1000 * 60 * 60 * 24,
     sameSite: isProduction ? 'none' : 'lax',
@@ -64,10 +62,111 @@ app.use(session({
   }
 }));
 
+let databaseReady = false;
+const memoryUsersById = new Map();
+const memoryUsersByEmail = new Map();
+const memoryUsersByStudentId = new Map();
+
+const ensureUserPayload = (user) => {
+  if (!user) return null;
+  const payload = user.toObject ? user.toObject() : { ...user };
+  const { passwordHash, ...safeUser } = payload;
+  return {
+    ...safeUser,
+    id: safeUser._id?.toString?.() || safeUser.id,
+    _id: safeUser._id?.toString?.() || safeUser.id
+  };
+};
+
+const authStore = {
+  async createUser({ fullName, email, studentID, passwordHash }) {
+    if (databaseReady) {
+      return User.create({ fullName, email, studentID, passwordHash });
+    }
+
+    const user = {
+      _id: new mongoose.Types.ObjectId().toString(),
+      fullName,
+      email,
+      studentID,
+      passwordHash,
+      createdAt: new Date()
+    };
+
+    memoryUsersById.set(user._id, user);
+    memoryUsersByEmail.set(normalizeEmail(email), user);
+    memoryUsersByStudentId.set(String(studentID).trim(), user);
+    return user;
+  },
+
+  async findExistingUser(email, studentID) {
+    if (databaseReady) {
+      return User.findOne({ $or: [buildEmailQuery(email), { studentID: String(studentID).trim() }] });
+    }
+
+    return memoryUsersByEmail.get(normalizeEmail(email)) || memoryUsersByStudentId.get(String(studentID).trim()) || null;
+  },
+
+  async findUserByEmail(email) {
+    if (databaseReady) {
+      return User.findOne(buildEmailQuery(email));
+    }
+
+    return memoryUsersByEmail.get(normalizeEmail(email)) || null;
+  },
+
+  async findUserById(id) {
+    if (databaseReady) {
+      return User.findById(id).select('-passwordHash');
+    }
+
+    return memoryUsersById.get(String(id)) || null;
+  },
+
+  async updateProfile(id, profileData) {
+    if (databaseReady) {
+      return User.findByIdAndUpdate(id, { $set: profileData }, { new: true, runValidators: true }).select('-passwordHash');
+    }
+
+    const existingUser = memoryUsersById.get(String(id));
+    if (!existingUser) return null;
+
+    const updatedUser = {
+      ...existingUser,
+      ...profileData,
+      updatedAt: new Date()
+    };
+
+    memoryUsersById.set(String(id), updatedUser);
+    memoryUsersByEmail.set(normalizeEmail(updatedUser.email), updatedUser);
+    memoryUsersByStudentId.set(String(updatedUser.studentID).trim(), updatedUser);
+    return updatedUser;
+  },
+
+  async listUsers() {
+    if (databaseReady) {
+      return User.find({}).select('_id fullName email studentID');
+    }
+
+    return Array.from(memoryUsersById.values()).map((user) => ({
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      studentID: user.studentID
+    }));
+  }
+};
+
 // MongoDB connection (can be early)
 mongoose.connect(DB_URL)
-  .then(() => console.log('✅ MongoDB Connected Successfully'))
-  .catch((err) => console.log('❌ MongoDB Connection Error:', err));
+  .then(() => {
+    databaseReady = true;
+    console.log('✅ MongoDB Connected Successfully');
+  })
+  .catch((err) => {
+    databaseReady = false;
+    console.log('⚠️ MongoDB Connection Error: continuing with in-memory auth fallback.', err.message);
+  });
 
 // Import models
 const Item = require('./models/Item');
@@ -98,16 +197,16 @@ app.post('/register', async (req, res) => {
     const normalizedEmail = normalizeEmail(email);
     const trimmedStudentID = String(studentID).trim();
 
-    const existingUser = await User.findOne({ $or: [buildEmailQuery(normalizedEmail), { studentID: trimmedStudentID }] });
+    const existingUser = await authStore.findExistingUser(normalizedEmail, trimmedStudentID);
     if (existingUser) {
       return res.status(409).json({ message: 'User already exists' });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const user = await User.create({ fullName: fullName.trim(), email: normalizedEmail, studentID: trimmedStudentID, passwordHash });
+    const user = await authStore.createUser({ fullName: fullName.trim(), email: normalizedEmail, studentID: trimmedStudentID, passwordHash });
 
-    req.session.userId = user._id;
-    req.session.user = { id: user._id, fullName: user.fullName, email: user.email };
+    req.session.userId = user._id?.toString?.() || user.id;
+    req.session.user = { id: user._id?.toString?.() || user.id, fullName: user.fullName, email: user.email };
 
     req.session.save((err) => {
       if (err) {
@@ -129,7 +228,7 @@ app.post('/login', async (req, res) => {
     }
 
     const normalizedEmail = normalizeEmail(email);
-    const user = await User.findOne(buildEmailQuery(normalizedEmail));
+    const user = await authStore.findUserByEmail(normalizedEmail);
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -139,8 +238,8 @@ app.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    req.session.userId = user._id;
-    req.session.user = { id: user._id, fullName: user.fullName, email: user.email };
+    req.session.userId = user._id?.toString?.() || user.id;
+    req.session.user = { id: user._id?.toString?.() || user.id, fullName: user.fullName, email: user.email };
 
     req.session.save((err) => {
       if (err) {
@@ -169,8 +268,8 @@ app.post('/logout', (req, res) => {
 
 app.get('/me', isAuthenticated, async (req, res) => {
   try {
-    const user = await User.findById(req.session.userId).select('-passwordHash');
-    res.json({ user });
+    const user = await authStore.findUserById(req.session.userId);
+    res.json({ user: ensureUserPayload(user) });
   } catch (err) {
     res.status(500).json({ message: 'Could not load user', error: err.message });
   }
@@ -179,18 +278,14 @@ app.get('/me', isAuthenticated, async (req, res) => {
 app.put('/me/profile', isAuthenticated, async (req, res) => {
   try {
     const profileData = sanitizeProfilePayload(req.body);
-    const user = await User.findByIdAndUpdate(
-      req.session.userId,
-      { $set: profileData },
-      { new: true, runValidators: true }
-    ).select('-passwordHash');
+    const user = await authStore.updateProfile(req.session.userId, profileData);
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    req.session.user = { id: user._id, fullName: user.fullName, email: user.email };
-    res.json({ user });
+    req.session.user = { id: user._id?.toString?.() || user.id, fullName: user.fullName, email: user.email };
+    res.json({ user: ensureUserPayload(user) });
   } catch (err) {
     res.status(400).json({ message: 'Profile update failed', error: err.message });
   }
@@ -198,8 +293,8 @@ app.put('/me/profile', isAuthenticated, async (req, res) => {
 
 app.get('/me/profile', isAuthenticated, async (req, res) => {
   try {
-    const user = await User.findById(req.session.userId).select('-passwordHash');
-    res.json({ user });
+    const user = await authStore.findUserById(req.session.userId);
+    res.json({ user: ensureUserPayload(user) });
   } catch (err) {
     res.status(500).json({ message: 'Could not load profile', error: err.message });
   }
@@ -270,7 +365,7 @@ app.delete('/posts/:id', isAuthenticated, async (req, res) => {
 
 app.get('/users', async (req, res) => {
   try {
-    const users = await User.find({}).select('_id fullName email studentID');
+    const users = await authStore.listUsers();
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
