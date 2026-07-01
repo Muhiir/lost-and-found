@@ -363,6 +363,9 @@ app.post('/posts', isAuthenticated, async (req, res) => {
       ...req.body,
       user: req.session.user?.fullName || 'You',
       userId: req.session.userId,
+      postedBy: req.session.userId,
+      postedByEmail: req.session.user?.email || null,
+      postedByName: req.session.user?.fullName || null,
     });
     await newPost.save();
     res.status(201).json(newPost);

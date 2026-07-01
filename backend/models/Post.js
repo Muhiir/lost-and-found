@@ -7,6 +7,9 @@ const postSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  postedByEmail: String,
+  postedByName: String,
   content: { type: String, required: true },
   likes: { type: Number, default: 0 },
   date: { type: String, default: () => new Date().toLocaleString() }

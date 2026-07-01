@@ -1,9 +1,26 @@
+function resolveRecipientValue(recipient) {
+  if (!recipient) return '';
+
+  if (typeof recipient === 'string') {
+    return recipient.trim();
+  }
+
+  if (typeof recipient === 'object') {
+    if (recipient._id) return String(recipient._id);
+    if (recipient.id) return String(recipient.id);
+    if (recipient.email) return String(recipient.email);
+    if (recipient.studentID) return String(recipient.studentID);
+  }
+
+  return '';
+}
+
 function validateMessagePayload(payload) {
   if (!payload || typeof payload !== 'object') {
     throw new Error('Message payload must be an object');
   }
 
-  const recipient = String(payload.recipient || '').trim();
+  const recipient = resolveRecipientValue(payload.recipient);
   const content = String(payload.content || '').trim();
 
   if (!recipient) {
@@ -19,4 +36,5 @@ function validateMessagePayload(payload) {
 
 module.exports = {
   validateMessagePayload,
+  resolveRecipientValue,
 };

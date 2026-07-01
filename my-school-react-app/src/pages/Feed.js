@@ -3,11 +3,26 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
 
+const resolveRecipientValue = (value) => {
+  if (!value) return '';
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'object') {
+    if (value._id) return String(value._id);
+    if (value.id) return String(value.id);
+    if (value.email) return String(value.email);
+    if (value.studentID) return String(value.studentID);
+  }
+  return '';
+};
+
 function Feed({ user }) {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState({ content: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [messageDraft, setMessageDraft] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
 
   // Fetch posts from backend
   useEffect(() => {
@@ -64,6 +79,40 @@ function Feed({ user }) {
       // await axios.patch(`${API_URL}/posts/${id}`, { likes: updatedPost.likes });
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleOpenMessage = (post) => {
+    setSelectedPost(post);
+    setMessageDraft(`Hi! I saw your post and wanted to ask about it.`);
+  };
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!selectedPost || !messageDraft.trim()) return;
+
+    try {
+      setSendingMessage(true);
+      const recipient = resolveRecipientValue(selectedPost.postedBy || selectedPost.userId || selectedPost.authorId || selectedPost.postedByEmail);
+      if (!recipient) {
+        alert('This post does not have a message recipient available yet.');
+        return;
+      }
+
+      const res = await axios.post(`${API_URL}/messages`, {
+        recipient,
+        content: messageDraft.trim()
+      }, { withCredentials: true });
+
+      if (res.status === 201) {
+        alert('✅ Message sent to the post author');
+        setSelectedPost(null);
+        setMessageDraft('');
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Could not send message');
+    } finally {
+      setSendingMessage(false);
     }
   };
 
@@ -194,26 +243,70 @@ function Feed({ user }) {
               {post.content}
             </p>
 
-              <button 
-                onClick={() => likePost(post._id || post.id)}
-                style={{
-                  padding: '10px 20px',
-                  background: '#f0f0f0',
-                  border: 'none',
-                  borderRadius: '30px',
-                  cursor: 'pointer',
-                  fontSize: '16px',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseOver={(e) => e.target.style.background = '#c8e6c9'}
-                onMouseOut={(e) => e.target.style.background = '#f0f0f0'}
-              >
-                ❤️ {post.likes}
-              </button>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <button 
+                  onClick={() => likePost(post._id || post.id)}
+                  style={{
+                    padding: '10px 20px',
+                    background: '#f0f0f0',
+                    border: 'none',
+                    borderRadius: '30px',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseOver={(e) => e.target.style.background = '#c8e6c9'}
+                  onMouseOut={(e) => e.target.style.background = '#f0f0f0'}
+                >
+                  ❤️ {post.likes}
+                </button>
+                <button
+                  onClick={() => handleOpenMessage(post)}
+                  style={{
+                    padding: '10px 18px',
+                    background: '#1b5e20',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '30px',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: '600'
+                  }}
+                >
+                  💬 Message author
+                </button>
+              </div>
             </div>
           );
         })}
       </div>
+
+      {selectedPost && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 1000 }}>
+          <div style={{ background: 'white', width: '100%', maxWidth: '480px', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h3 style={{ margin: 0, color: '#1b5e20' }}>Message author</h3>
+              <button type="button" onClick={() => setSelectedPost(null)} style={{ border: 'none', background: 'transparent', fontSize: '20px', cursor: 'pointer' }}>×</button>
+            </div>
+            <p style={{ margin: '0 0 12px 0', color: '#555' }}>Send a quick message about this post.</p>
+            <form onSubmit={handleSendMessage}>
+              <textarea
+                value={messageDraft}
+                onChange={(e) => setMessageDraft(e.target.value)}
+                rows={5}
+                placeholder="Write your message..."
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #ddd', resize: 'vertical' }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px' }}>
+                <button type="button" onClick={() => setSelectedPost(null)} style={{ padding: '10px 14px', borderRadius: '10px', border: '1px solid #ddd', background: 'white', cursor: 'pointer' }}>Cancel</button>
+                <button type="submit" disabled={sendingMessage} style={{ padding: '10px 14px', borderRadius: '10px', border: 'none', background: '#1b5e20', color: 'white', cursor: sendingMessage ? 'not-allowed' : 'pointer' }}>
+                  {sendingMessage ? 'Sending...' : 'Send message'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Keyframes */}
       <style jsx>{`

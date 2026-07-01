@@ -3,6 +3,18 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
 
+const resolveRecipientValue = (value) => {
+  if (!value) return '';
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'object') {
+    if (value._id) return String(value._id);
+    if (value.id) return String(value.id);
+    if (value.email) return String(value.email);
+    if (value.studentID) return String(value.studentID);
+  }
+  return '';
+};
+
 function LostFound() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -66,7 +78,12 @@ function LostFound() {
 
     try {
       setSendingMessage(true);
-      const recipient = selectedItem.postedByEmail || selectedItem.postedBy || selectedItem.postedByName;
+      const recipient = resolveRecipientValue(selectedItem.postedBy || selectedItem.postedByEmail || selectedItem.postedByName || selectedItem.userId || selectedItem.authorId);
+      if (!recipient) {
+        alert('This post does not have a message recipient available yet.');
+        return;
+      }
+
       const res = await axios.post(`${API_URL}/messages`, {
         recipient,
         content: messageDraft.trim()
