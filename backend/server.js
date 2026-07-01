@@ -9,11 +9,13 @@ const { normalizeEmail, buildEmailQuery } = require('./utils/auth');
 require('dotenv').config();
 
 const isProduction = process.env.NODE_ENV === 'production';
+const isProductionLike = isProduction || process.env.RENDER === 'true' || process.env.VERCEL === '1' || process.env.SESSION_SECURE === 'true';
+const useSecureCookies = isProductionLike;
 const DB_URL = process.env.DB_URL || 'mongodb://127.0.0.1:27017/campusconnect';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'campusconnect-secret-2026';
 const PORT = process.env.PORT || 4000;
 
-if (isProduction && !process.env.DB_URL) {
+if (isProductionLike && !process.env.DB_URL) {
   console.error('❌ Missing DB_URL environment variable. Set DB_URL in Render environment settings.');
   process.exit(1);
 }
@@ -38,7 +40,15 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    if (allowedOrigins.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    if (/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
+      return callback(null, true);
+    }
+
+    if (/^https:\/\/(.+\.)?(vercel\.app|netlify\.app|onrender\.com|herokuapp\.com|github\.dev)$/.test(origin)) {
       return callback(null, true);
     }
 
@@ -48,7 +58,7 @@ const corsOptions = {
   optionsSuccessStatus: 200
 };
 
-if (isProduction) {
+if (isProductionLike) {
   app.set('trust proxy', 1);
 }
 
@@ -63,12 +73,12 @@ app.use(session({
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  proxy: isProduction,
+  proxy: isProductionLike,
   store: new MemoryStore(),
   cookie: {
     maxAge: 1000 * 60 * 60 * 24,
-    sameSite: isProduction ? 'none' : 'lax',
-    secure: isProduction,
+    sameSite: useSecureCookies ? 'none' : 'lax',
+    secure: useSecureCookies,
     httpOnly: true,
     path: '/'
   }
